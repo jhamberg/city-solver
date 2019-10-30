@@ -10,6 +10,7 @@
   "author": "Jonatan Hamberg",
   "license": "ISC",
   "devDependencies": {
+    "eslint": "^6.6.0",
     "nodemon": "^1.19.4"
   },
   "dependencies": {
