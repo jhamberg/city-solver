@@ -78,7 +78,7 @@ function solve(initial, beginX, beginY, maxTurns) {
 
         // Check which neighboring cities can be traveled to
         const directions = availableDirections(updated, x, y);
-        for ([nextX, nextY, nextDirection] of directions) {
+        for (const [nextX, nextY, nextDirection] of directions) {
             const nextMove = [...moves, [nextX, nextY]];
             if (direction === nextDirection) {
                 // Keep going in the same direction, no need to consume turns
@@ -107,7 +107,7 @@ function main({ size, start, turns }) {
     console.log();
     console.log(`Ran ${iterations} iterations in ${elapsed} ms`);
     console.log(`Found ${results.length} results!`);
-    console.log();
+    console.log()
 
     if (results.length) {
         results.sort((a, b) => a[0] - b[0]);
