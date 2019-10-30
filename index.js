@@ -1,15 +1,19 @@
 const { Repeat, List } = require("immutable");
 const { performance } = require("perf_hooks");
 
+// Traveling salesman problem (TSP) solver for a regular grid with some twists
+// Created for fun as a part of MFK-M204, University of Helsinki
+// Author: Jonatan Hamberg <jonatan.hamberg@outlook.com>
+
 function availableDirections(board, x, y) {
     let res = [];
     const mX = board.size - 1;
     const mY = board.size - 1;
-    if (x + 1 <= mX && !isTraversed(board.getIn([x + 1, y]))) res.push([x + 1, y, "S"]);
-    if (x - 1 >= 0 &&  !isTraversed(board.getIn([x - 1, y]))) res.push([x - 1, y, "N"]);
-    if (y + 1 <= mY && !isTraversed(board.getIn([x, y + 1]))) res.push([x, y + 1, "E"])
-    if (y - 1 >= 0 &&  !isTraversed(board.getIn([x, y - 1]))) res.push([x, y - 1, "W"]);
-    return res;    
+    if (x + 1 <= mX && !isTraversed(board.getIn([x + 1, y]))) res.push([x + 1, y, "S"]); // South
+    if (x - 1 >= 0 &&  !isTraversed(board.getIn([x - 1, y]))) res.push([x - 1, y, "N"]); // North
+    if (y + 1 <= mY && !isTraversed(board.getIn([x, y + 1]))) res.push([x, y + 1, "E"]); // East
+    if (y - 1 >= 0 &&  !isTraversed(board.getIn([x, y - 1]))) res.push([x, y - 1, "W"]); // West
+    return res;
 }
 
 function isTraversed(cell) {
@@ -53,6 +57,7 @@ function getTurnSymbol(direction) {
 }
 
 function solve(initial, beginX, beginY, maxTurns) {
+    // In order to avoid hitting call stack limits, simulate the stack
     const stack = [[initial, beginX, beginY, "", [], maxTurns + 1]];
     const results = [];
     let iterations = 0;
@@ -63,6 +68,7 @@ function solve(initial, beginX, beginY, maxTurns) {
 
         if (isFilled(updated)) {
             const usedTurns = maxTurns - turns;
+            // Too lazy to push and pull these from the results array
             console.log(`T: ${usedTurns}`);
             console.log(render(updated));
             console.log("-".repeat(10));
@@ -70,12 +76,15 @@ function solve(initial, beginX, beginY, maxTurns) {
             continue;
         }
 
+        // Check which neighboring cities can be traveled to
         const directions = availableDirections(updated, x, y);
         for ([nextX, nextY, nextDirection] of directions) {
             const nextMove = [...moves, [nextX, nextY]];
             if (direction === nextDirection) {
+                // Keep going in the same direction, no need to consume turns
                 stack.push(List([updated, nextX, nextY, nextDirection, nextMove, turns]));
             } else if (turns >= 1) {
+                // Change the symbol to match the turn, reduce the turn counter
                 const turned = updated.setIn([x, y], getTurnSymbol(direction + nextDirection));
                 stack.push(List([turned, nextX, nextY, nextDirection, nextMove, turns - 1]));
             }
@@ -85,12 +94,16 @@ function solve(initial, beginX, beginY, maxTurns) {
 }
 
 function main({ size, start, turns }) {
+    // Create the adjustable size grid
     const initialRow = Repeat(null, size).toList();
     const initial = Repeat(initialRow, size).toList();
+
+    // Benchmark the solve operation
     const t0 = performance.now();
     const [iterations, results] = solve(initial, start.x, start.y, turns);
     const elapsed = Math.round((performance.now() - t0));
 
+    // "Pretty" print the results
     console.log();
     console.log(`Ran ${iterations} iterations in ${elapsed} ms`);
     console.log(`Found ${results.length} results!`);
